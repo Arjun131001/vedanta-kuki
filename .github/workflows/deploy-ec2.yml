@@ -1,0 +1,108 @@
+name: Deploy Vedanta to EC2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: vedanta-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    environment: production
+    env:
+      AWS_REGION: ap-southeast-2
+      EC2_HOST: vedant-a.duckdns.org
+      EC2_SECURITY_GROUP: sg-0db616c56b2785aa2
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Build and test the exact release
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build -f deploy/Dockerfile.backend -t "vedanta-backend:$GITHUB_SHA" .
+          docker run --rm --network none -e PYTHONPATH=/app \
+            -v "$PWD/backend/tests:/tests:ro" "vedanta-backend:$GITHUB_SHA" \
+            python -m pytest /tests -q --tb=short -p no:cacheprovider
+          node --test frontend/tests/*.test.mjs
+          docker build -f deploy/Dockerfile.web -t "vedanta-web:$GITHUB_SHA" .
+          mkdir -p release
+          docker save "vedanta-backend:$GITHUB_SHA" "vedanta-web:$GITHUB_SHA" | gzip > release/images.tar.gz
+          cp deploy/compose.yaml deploy/verify-live.py deploy/backup.sh deploy/apply-release.sh release/
+          tar -czf release.tar.gz -C release .
+
+      - name: Authenticate to AWS with a short-lived GitHub identity
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: vedanta-${{ github.run_id }}
+
+      - name: Temporarily allow this runner's SSH connection
+        id: firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUNNER_IP=$(curl --fail --silent --show-error --retry 3 https://checkip.amazonaws.com)
+          [[ "$RUNNER_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          RULE_ID=$(aws ec2 authorize-security-group-ingress \
+            --group-id "$EC2_SECURITY_GROUP" --protocol tcp --port 22 --cidr "$RUNNER_IP/32" \
+            --query 'SecurityGroupRules[0].SecurityGroupRuleId' --output text)
+          [[ "$RULE_ID" == sgr-* ]]
+          echo "rule_id=$RULE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Load the deployment key and pinned server identity
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          KEY_PASSPHRASE: ${{ secrets.EC2_SSH_KEY_PASSPHRASE }}
+          KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$PRIVATE_KEY"
+          test -n "$KNOWN_HOSTS"
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$PRIVATE_KEY" > ~/.ssh/vedanta
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          eval "$(ssh-agent -s)"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
+          printf '#!/bin/sh\nprintf "%%s\\n" "$KEY_PASSPHRASE"\n' > ~/.ssh/askpass
+          chmod 700 ~/.ssh/askpass
+          SSH_ASKPASS="$HOME/.ssh/askpass" SSH_ASKPASS_REQUIRE=force DISPLAY=:0 \
+            ssh-add ~/.ssh/vedanta < /dev/null
+          rm ~/.ssh/vedanta ~/.ssh/askpass
+
+      - name: Upload and deploy with backup and health checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          OPTIONS=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o HostKeyAlias=vedanta-ec2 -o ConnectTimeout=20)
+          scp "${OPTIONS[@]}" release.tar.gz "ubuntu@$EC2_HOST:/home/ubuntu/vedanta-$GITHUB_SHA.tar.gz"
+          ssh "${OPTIONS[@]}" "ubuntu@$EC2_HOST" \
+            "mkdir -p /home/ubuntu/vedanta-release-$GITHUB_SHA && tar -xzf /home/ubuntu/vedanta-$GITHUB_SHA.tar.gz -C /home/ubuntu/vedanta-release-$GITHUB_SHA && sudo bash /home/ubuntu/vedanta-release-$GITHUB_SHA/apply-release.sh $GITHUB_SHA"
+
+      - name: Remove temporary SSH access
+        if: always() && steps.firewall.outputs.rule_id != ''
+        env:
+          RULE_ID: ${{ steps.firewall.outputs.rule_id }}
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id "$EC2_SECURITY_GROUP" --security-group-rule-ids "$RULE_ID"
+
+      - name: Close the SSH agent
+        if: always()
+        run: |
+          if [[ -n "${SSH_AGENT_PID:-}" ]]; then ssh-agent -k; fi

@@ -1,0 +1,25 @@
+{$DOMAIN} {
+    encode gzip
+    route {
+        basic_auth {
+            vedanta {$DEMO_PASSWORD_HASH}
+        }
+        request_body {
+            max_size 273MB
+        }
+        @backend path /api /api/* /docs /docs/* /redoc /openapi.json
+        handle @backend {
+            reverse_proxy api:8000
+        }
+        handle {
+            root * /srv
+            try_files {path} /index.html
+            file_server
+        }
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+        X-Frame-Options DENY
+    }
+}

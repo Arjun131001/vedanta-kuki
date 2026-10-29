@@ -1,0 +1,7 @@
+deploy/*.sh text eol=lf
+deploy/*.py text eol=lf
+deploy/*.service text eol=lf
+deploy/*.timer text eol=lf
+deploy/*.yaml text eol=lf
+deploy/Caddyfile text eol=lf
+deploy/Dockerfile.* text eol=lf

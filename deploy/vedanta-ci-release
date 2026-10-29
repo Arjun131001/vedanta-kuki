@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release_id=${1:?Commit SHA required}
+bundle=${2:?Bundle directory required}
+[[ "$release_id" =~ ^[a-f0-9]{40}$ ]] || exit 1
+bundle=$(realpath -- "$bundle")
+case "$bundle" in
+    /opt/vedanta-runner/_work/_temp/vedanta-"$release_id") ;;
+    *) echo 'Unexpected release bundle location' >&2; exit 1 ;;
+esac
+test -f "$bundle/apply-release.sh"
+exec bash "$bundle/apply-release.sh" "$release_id"

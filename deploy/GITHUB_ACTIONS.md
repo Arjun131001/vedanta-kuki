@@ -1,19 +1,23 @@
-# Approval-gated GitHub deployment
+# GitHub approval and local EC2 deployment
 
 Repository: https://github.com/Arjun131001/vedanta-kuki
 
-Builds and tests run on GitHub-hosted Ubuntu. Deployment from main waits for Arjun131001 approval in the production environment, with administrator bypass disabled and main as the only permitted deployment branch. Self-review is allowed so the sole owner can approve their own run. Pull requests and the preparation branch never run on EC2.
+GitHub builds and tests the application on hosted Ubuntu runners. For main-branch releases, the production environment requires approval by Arjun131001, limits releases to main, and disables administrator bypass. After approval, GitHub publishes an approved-vedanta-COMMIT artifact retained for three days. No EC2 deployment happens inside GitHub Actions.
 
-AWS Free plan denied OIDC-provider operations through a service control policy. A dedicated deployment runner on the existing EC2 instance instead downloads the approved artifact over outbound HTTPS. No account upgrade, AWS access key, GitHub SSH secret or additional inbound port is needed. The website password, OpenAI key and DuckDNS token remain on EC2.
+The final deployment runs from your computer using the existing SSH key and IP-restricted firewall. No persistent runner is installed on EC2. No SSH private key, website password, OpenAI key or DuckDNS token is stored in GitHub. The AWS Free plan explicitly denied OIDC-provider operations, and installation of a self-hosted deployment runner was declined.
 
-The runner uses a separate locked Linux user, vedanta-runner, under /opt/vedanta-runner. It is not in the Docker group and cannot directly read production secrets. Its one sudo entry allows the root-owned /usr/local/sbin/vedanta-ci-release helper, which validates the SHA and staging path before applying the approved release. Approved release code has administrator deployment capability. Protect repository write access and workflow changes; never route untrusted pull-request code or unrelated jobs to this production runner. Labels are routing, not an authorization boundary.
+## Deploy an approved release
 
-The release contains commit-tagged backend/frontend images and an explicit allowlist of deployment files. It excludes credentials and private documents. Before changing containers, it takes a consistent backup and records the previous configuration. It checks authenticated HTTPS afterward and restores previous configuration/images if verification fails. Incompatible database changes require restoring the pre-release backup manually.
+Install the official GitHub CLI and sign in with gh auth login. Merge the reviewed PR, wait for the main-branch build, then approve the production environment job in GitHub Actions. Copy the successful workflow run ID and run from the project folder:
 
-Releases are serialized. Images, bundles and backups are retained for recovery, so monitor EC2 disk and manage retention. The runner uses memory on the existing instance; GitHub-hosted build minutes and artifact usage follow the repository plan. Artifacts expire after three days.
+```powershell
+.\deploy\deploy-approved.ps1 -RunId YOUR_RUN_ID -PrivateKey "$env:USERPROFILE\Downloads\vedanta-sydney.pem"
+```
 
-Approval uses GitHub authentication; no password is entered into workflow inputs or logs. The earlier backend suite had 169 passes and one evidence-recovery failure. The complete current suite gates deployment; tests are not skipped to force a release.
+The script checks the workflow identity, main branch, event and successful conclusion, and requires the approved artifact. It downloads the exact commit-tagged images and deployment files, verifies SSH host identity, and uploads to EC2. Your current public IP must be allowed by the existing SSH firewall rule. Do not open SSH to all addresses.
 
-Required reviewers are available on GitHub Free for public repositories; check protections before changing visibility. Declaring environment: production in YAML alone does not create a required-reviewer rule.
+The server loads the prebuilt images, takes a consistent backup, preserves its runtime secrets, and updates containers. Authenticated HTTPS checks verify the result. Failures restore the previous configuration/images; incompatible database changes require a manual restore from the retained pre-release backup. Old images, bundles and backups need periodic retention management on the small EC2 disk.
 
-Reference: https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments
+Pull requests and the preparation branch only build/test. They cannot produce an approved main-branch release. GitHub authentication provides the approval gate; no plaintext deployment password appears in workflow inputs or logs. The website password remains on EC2.
+
+The initial PR build passed its full current tests and image builds. The revised runnerless workflow must also pass CI before merging. Required reviewer availability depends on GitHub plan and repository visibility; review protections before making the repository private.

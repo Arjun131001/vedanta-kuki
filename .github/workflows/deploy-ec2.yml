@@ -37,27 +37,25 @@ jobs:
           compression-level: 0
           retention-days: 3
           if-no-files-found: error
-  deploy:
+  approve-release:
+    name: Approve release for local EC2 deployment
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: [self-hosted, linux, x64, vedanta-production]
-    timeout-minutes: 15
-    environment:
-      name: production
-      url: https://vedant-a.duckdns.org
-    concurrency:
-      group: vedanta-production
-      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: production
     steps:
       - uses: actions/download-artifact@v8
         with:
           name: vedanta-${{ github.sha }}
-          path: incoming
-      - name: Deploy the approved release
-        shell: bash
+          path: approved
+      - uses: actions/upload-artifact@v7
+        with:
+          name: approved-vedanta-${{ github.sha }}
+          path: approved/release.tar.gz
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
+      - name: Explain the final deployment step
         run: |
-          set -euo pipefail
-          bundle="$RUNNER_TEMP/vedanta-$GITHUB_SHA"
-          mkdir -p "$bundle"
-          tar -xzf incoming/release.tar.gz -C "$bundle"
-          sudo /usr/local/sbin/vedanta-ci-release "$GITHUB_SHA" "$bundle"
+          echo 'Release approved. Run deploy/deploy-approved.ps1 from your computer with this run ID to deploy over your existing SSH connection.' >> "$GITHUB_STEP_SUMMARY"

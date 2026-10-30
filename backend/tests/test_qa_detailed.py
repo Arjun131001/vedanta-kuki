@@ -51,7 +51,7 @@ def test_detailed_request_budget_strict_schema_and_audit():
     def provider(request):
         body = json.loads(request.content)
         assert body["max_completion_tokens"] == MAX_ANSWER_TOKENS == 12000
-        assert body["model"] == "gpt-5-nano"
+        assert body["model"] == "gpt-4o-mini"
         schema = body["response_format"]["json_schema"]["schema"]
         claim = schema["$defs"]["Claim"]
         assert set(claim["required"]) == set(claim["properties"])
@@ -63,7 +63,7 @@ def test_detailed_request_budget_strict_schema_and_audit():
         result = {"claims": [{"text": "Energy consumption 42 kWh", "citation_ids": ["energy:a"], "section": "Reported data"}], "limitations": []}
         return httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(result)}}]})
     with httpx.Client(transport=httpx.MockTransport(provider)) as client:
-        result = answer_question("Explain the reported data in detail", evidence(), [], "gpt-5-nano", "mock-key", client)
+        result = answer_question("Explain the reported data in detail", evidence(), [], "gpt-4o-mini", "mock-key", client)
     assert result["_qa_audit"]["prompt_version"] == PROMPT_VERSION
     assert "## Reported data" in result["answer"]
 

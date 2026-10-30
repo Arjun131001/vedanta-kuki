@@ -637,7 +637,7 @@ export default function ChatWorkspace({
             </div>
           </div>
           <p className="chat-disclosure">
-            Lookups use OpenAI (gpt-5-nano) with elaborative cited answers. Calculations and financial-year totals stay local.
+            Lookups use OpenAI (gpt-4o-mini) with elaborative cited answers. Calculations and financial-year totals stay local.
           </p>
           </div>
         </div>

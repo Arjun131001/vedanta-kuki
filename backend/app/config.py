@@ -40,7 +40,7 @@ class Settings:
     poll_seconds: float = 1.0
     cors_origin: str = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
     openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""), repr=False)
-    openai_model: str = field(default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-5-nano"))
+    openai_model: str = field(default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
 
     @property
     def db_path(self) -> Path:

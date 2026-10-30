@@ -9,6 +9,7 @@ services:
     env_file: runtime.env
     environment:
       DATA_DIR: /data
+      OPENAI_MODEL: gpt-4o-mini
       FRONTEND_ORIGIN: https://${DOMAIN:-vedant-a.duckdns.org}
     volumes:
       - app_data:/data
@@ -29,6 +30,7 @@ services:
     env_file: runtime.env
     environment:
       DATA_DIR: /data
+      OPENAI_MODEL: gpt-4o-mini
     volumes:
       - app_data:/data
     depends_on:

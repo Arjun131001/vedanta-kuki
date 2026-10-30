@@ -125,6 +125,8 @@ class Store:
     def get(self, document_id):
         with self.connect() as db:
             row = db.execute("""SELECT d.*, j.attempts, j.available_at AS next_attempt_at, f.status AS fact_status, f.error AS fact_error,
+                (SELECT count(*) FROM fact_segments fs WHERE fs.document_id=d.id) AS generation_total_segments,
+                (SELECT count(*) FROM fact_segments fs WHERE fs.document_id=d.id AND fs.status='done') AS generation_completed_segments,
                 (SELECT error FROM fact_segments fs WHERE fs.document_id=d.id AND fs.status='failed' ORDER BY fs.ordinal LIMIT 1) AS fact_segment_error,
                 (SELECT summary_json FROM source_results s WHERE s.document_id=d.id AND s.version=1) AS source_summary_json
                 FROM documents d JOIN jobs j ON j.document_id=d.id AND j.kind='validation' AND j.version=1 LEFT JOIN fact_jobs f ON f.document_id=d.id WHERE d.id=?""", (document_id,)).fetchone()
@@ -133,6 +135,8 @@ class Store:
     def list(self):
         with self.connect() as db:
             rows = db.execute("""SELECT d.*, j.attempts, j.available_at AS next_attempt_at, f.status AS fact_status, f.error AS fact_error,
+                (SELECT count(*) FROM fact_segments fs WHERE fs.document_id=d.id) AS generation_total_segments,
+                (SELECT count(*) FROM fact_segments fs WHERE fs.document_id=d.id AND fs.status='done') AS generation_completed_segments,
                 (SELECT error FROM fact_segments fs WHERE fs.document_id=d.id AND fs.status='failed' ORDER BY fs.ordinal LIMIT 1) AS fact_segment_error,
                 (SELECT summary_json FROM source_results s WHERE s.document_id=d.id AND s.version=1) AS source_summary_json
                 FROM documents d JOIN jobs j ON j.document_id=d.id AND j.kind='validation' AND j.version=1 LEFT JOIN fact_jobs f ON f.document_id=d.id ORDER BY d.created_at DESC""").fetchall()

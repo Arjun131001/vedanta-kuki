@@ -30,18 +30,25 @@ def test_request_schema_binds_value_to_targets_and_other_refs_to_source():
     assert "SourceReference" not in provider_schema()["$defs"]
 
 
-def test_provider_receives_bound_schema():
+@pytest.mark.parametrize("model,effort", [
+    ("gpt-4o-mini", None),
+    ("gpt-5-nano", "minimal"),
+    ("gpt-5-mini-2025-08-07", "minimal"),
+    ("gpt-5.1", None),
+])
+def test_provider_receives_bound_schema(model, effort):
     document = source("Energy 42 kWh")
     segment = build_manifest(document)[0]
     def handler(request):
         body = json.loads(request.content)
+        assert body.get("reasoning_effort") == effort
         schema = body["response_format"]["json_schema"]["schema"]
         assert schema["$defs"]["TargetReference"]["enum"] == segment["target_ids"]
         result = {"document_type": "Bill", "organization": None, "organization_ref": None,
                   "facts": [], "warnings": ["Review source"], "coverage": "partial", "coverage_note": "Review"}
         return httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(result)}}]})
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
-        output = call_openai(document, "gpt-4o-mini", "test-key", client, segment)
+        output = call_openai(document, model, "test-key", client, segment)
     assert output["result"]["coverage"] == "partial"
     assert output["request_schema_version"] == "source-bound-references-v1"
     assert len(output["request_schema_hash"]) == 64
@@ -62,6 +69,21 @@ def test_reference_schema_is_bounded():
     payload = {"records": [{"id": f"p1:l{i}", "text": "value"} for i in range(500)]}
     with pytest.raises(FactError, match="too many references"):
         provider_schema(payload)
+
+
+@pytest.mark.parametrize("message,finish_reason", [
+    ({"content": "{}"}, "stop"),
+    ({"content": None}, "stop"),
+    ({"content": "{}"}, "length"),
+])
+def test_malformed_provider_output_is_retryable(message, finish_reason):
+    def handler(request):
+        return httpx.Response(200, json={"choices": [
+            {"finish_reason": finish_reason, "message": message}]})
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        with pytest.raises(FactError) as error:
+            call_openai(source("Energy 42 kWh"), "gpt-5-nano", "test-key", client)
+    assert error.value.permanent is False
 
 
 def test_pdf_smaller_segments_cover_each_line_once_with_context_separate():

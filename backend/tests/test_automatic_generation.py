@@ -34,6 +34,9 @@ def test_upload_automatically_generates_and_deduplicates_after_restart(tmp_path)
     restarted = Store(settings)
     assert restarted.get(document["id"])["generation_status"] == "generating"
     assert fact_queue.enqueue_automatic(restarted)
+    progress = restarted.get(document["id"])
+    assert progress["generation_total_segments"] == 1
+    assert progress["generation_completed_segments"] == 0
     assert not fact_queue.enqueue_automatic(restarted)
     requests = []
     def provider(request):
@@ -50,6 +53,7 @@ def test_upload_automatically_generates_and_deduplicates_after_restart(tmp_path)
     assert process_fact(restarted, caller)
     generated = restarted.get(document["id"])
     assert generated["status"] == "ready" and generated["generation_status"] == "generated"
+    assert generated["generation_completed_segments"] == generated["generation_total_segments"] == 1
     assert fact_queue.get(restarted, document["id"])["output"]["result"]["facts"][0]["value"] == "42"
     assert len(requests) == 1
     existing, duplicate = ingest(restarted)

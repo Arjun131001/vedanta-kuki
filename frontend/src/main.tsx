@@ -19,6 +19,8 @@ type Document = {
   size_bytes: number;
   status: "queued" | "processing" | "ready" | "failed";
   generation_status?: "not_requested" | "generating" | "generated" | "failed";
+  generation_total_segments?: number;
+  generation_completed_segments?: number;
   generation_error?: string | null;
   auto_generate?: boolean;
   created_at: number;
@@ -527,6 +529,8 @@ function Library({
                   <span className={`badge ${displayStatus(d)}`}>
                     <i />
                     {statusLabels[displayStatus(d)]}
+                    {displayStatus(d) === "generating" && !!d.generation_total_segments &&
+                      ` · ${d.generation_completed_segments ?? 0}/${d.generation_total_segments} sections`}
                   </span>
                   {!!d.source_summary?.warnings.length && <span className="source-warning-label" title={d.source_summary.warnings.join("\n")}>
                     <Icon name="alert" size={12} /> Source warnings

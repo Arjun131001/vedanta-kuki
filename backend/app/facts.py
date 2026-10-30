@@ -657,6 +657,10 @@ def call_openai(source, model, api_key, client=None, segment=None):
     body = {"model": model, "store": False, "max_completion_tokens": 12000,
             "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": payload}],
             "response_format": {"type": "json_schema", "json_schema": {"name": "reported_facts", "strict": True, "schema": provider_schema(source_payload)}}}
+    # These GPT-5 models otherwise default to medium reasoning, adding minutes
+    # to each small extraction segment. Keep other model families compatible.
+    if re.fullmatch(r"gpt-5(?:-mini|-nano)?(?:-\d{4}-\d{2}-\d{2})?", model):
+        body["reasoning_effort"] = "minimal"
     own_client = client is None
     client = client or httpx.Client(timeout=httpx.Timeout(300.0, connect=15.0))
     try:
@@ -678,17 +682,17 @@ def call_openai(source, model, api_key, client=None, segment=None):
         data = response.json()
         choices = data.get("choices", [])
         if len(choices) != 1 or choices[0].get("finish_reason") != "stop":
-            raise FactError("OpenAI did not complete the response; no facts were saved.")
+            raise FactError("OpenAI did not complete the response; no facts were saved.", permanent=False)
         message = choices[0].get("message", {})
         if message.get("refusal"):
             raise FactError("OpenAI refused the request; no facts were saved.")
         content = message.get("content")
         if not isinstance(content, str):
-            raise FactError("OpenAI returned an incomplete response; no facts were saved.")
+            raise FactError("OpenAI returned an incomplete response; no facts were saved.", permanent=False)
         try:
             result = IndexedFactResult.model_validate_json(content)
         except (ValidationError, ValueError) as exc:
-            raise FactError("OpenAI returned an invalid structured response; no facts were saved.") from exc
+            raise FactError("OpenAI returned an invalid structured response; no facts were saved.", permanent=False) from exc
         output = project_indexed(result, source, segment)
         return {"result": output, "proposed_result": result.model_dump(), "provider": "openai", "validator_version": VALIDATOR_VERSION,
                 "request_schema_version": REQUEST_SCHEMA_VERSION,

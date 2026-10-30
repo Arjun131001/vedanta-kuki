@@ -1,0 +1,90 @@
+{
+  "adani_consumption_period": {
+    "answer": "The documents report 47407 for period APR-24.",
+    "citations": [],
+    "limitations": [
+      "Offline lookup stub for scoring packaging; live runs should cite source pages."
+    ],
+    "calculations": []
+  },
+  "bescom_consumption_period": {
+    "answer": "The documents report 63000 for period 01-06-2024.",
+    "citations": [],
+    "limitations": [
+      "Offline lookup stub for scoring packaging; live runs should cite source pages."
+    ],
+    "calculations": []
+  },
+  "water_consumption": {
+    "answer": "The documents report 2321 Cubic Meter.",
+    "citations": [],
+    "limitations": [
+      "Offline lookup stub for scoring packaging; live runs should cite source pages."
+    ],
+    "calculations": []
+  },
+  "waste_total_sum": {
+    "answer": "I can\u2019t calculate that from the documents yet.",
+    "citations": [],
+    "limitations": [
+      "The calculation engine is not available yet."
+    ],
+    "calculations": []
+  },
+  "workbook_monthly_vs_annual": {
+    "answer": "I can\u2019t calculate that from the documents yet.",
+    "citations": [],
+    "limitations": [
+      "The calculation engine is not available yet."
+    ],
+    "calculations": []
+  },
+  "policy_complaint_deadline_absent": {
+    "answer": "The selected evidence does not specify a complaint-resolution deadline.",
+    "citations": [],
+    "limitations": [
+      "Absence is based on retrieved excerpts, not a claim about the whole document beyond those excerpts."
+    ],
+    "calculations": []
+  },
+  "policy_value_chain_scope": {
+    "answer": "The documents report entire value.",
+    "citations": [],
+    "limitations": [
+      "Offline lookup stub for scoring packaging; live runs should cite source pages."
+    ],
+    "calculations": []
+  },
+  "fy_2024_electricity_bills": {
+    "answer": "I can\u2019t calculate that from the documents yet.",
+    "citations": [],
+    "limitations": [
+      "The calculation engine is not available yet."
+    ],
+    "calculations": []
+  },
+  "fy_2025_sparse_water": {
+    "answer": "I can\u2019t calculate that from the documents yet.",
+    "citations": [],
+    "limitations": [
+      "The calculation engine is not available yet."
+    ],
+    "calculations": []
+  },
+  "cross_org_refuse_blind_total": {
+    "answer": "I can\u2019t calculate that from the documents yet.",
+    "citations": [],
+    "limitations": [
+      "The calculation engine is not available yet."
+    ],
+    "calculations": []
+  },
+  "missing_metric_limitation": {
+    "answer": "I could not find Scope 1 greenhouse gas emissions in the selected water bill excerpts.",
+    "citations": [],
+    "limitations": [
+      "Absence is based on retrieved excerpts, not a claim about the whole document beyond those excerpts."
+    ],
+    "calculations": []
+  }
+}

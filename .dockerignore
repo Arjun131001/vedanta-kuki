@@ -1,0 +1,15 @@
+.git
+.venv
+.env
+**/.env
+**/runtime.env
+**/duckdns.env
+backend/data
+data
+tmp
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/*.sqlite3*
+deploy/backups

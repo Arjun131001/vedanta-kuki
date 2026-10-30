@@ -1,0 +1,60 @@
+name: vedanta
+services:
+  api:
+    image: vedanta-backend:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+    restart: unless-stopped
+    env_file: runtime.env
+    environment:
+      DATA_DIR: /data
+      FRONTEND_ORIGIN: https://${DOMAIN:-vedant-a.duckdns.org}
+    volumes:
+      - app_data:/data
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+  worker:
+    image: vedanta-backend:${RELEASE_TAG:-local}
+    command: [python, -m, app.worker]
+    restart: unless-stopped
+    env_file: runtime.env
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - app_data:/data
+    depends_on:
+      api:
+        condition: service_healthy
+    logging: *logging
+  web:
+    image: vedanta-web:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:-vedant-a.duckdns.org}
+      DEMO_PASSWORD_HASH: ${DEMO_PASSWORD_HASH:?Set a bcrypt password hash in deploy/.env}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    logging: *logging
+volumes:
+  app_data:
+  caddy_data:
+  caddy_config:

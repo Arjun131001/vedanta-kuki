@@ -1,0 +1,293 @@
+{
+  "label": "improved",
+  "overall": {
+    "passed": 11,
+    "total": 11,
+    "score": 100.0
+  },
+  "cases": [
+    {
+      "id": "adani_consumption_period",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "bescom_consumption_period",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "water_consumption",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "waste_total_sum",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "workbook_monthly_vs_annual",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "policy_complaint_deadline_absent",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "policy_value_chain_scope",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "fy_2024_electricity_bills",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "fy_2025_sparse_water",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "cross_org_refuse_blind_total",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "missing_metric_limitation",
+      "pass": true,
+      "notes": "pass"
+    }
+  ],
+  "answers": {
+    "adani_consumption_period": {
+      "answer": "The documents report 47407 for period APR-24.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "bescom_consumption_period": {
+      "answer": "The documents report 63000 for period 01-06-2024.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "water_consumption": {
+      "answer": "The documents report 2321 Cubic Meter.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "waste_total_sum": {
+      "answer": "System-calculated total(s) from reported values:\n- Reported 1 T: ETP sludge 1.0 T\n- Reported 0.4 T: residues containing oil 0.4 T\n- Calculated sum: 1.4 T",
+      "calculations": [
+        {
+          "operation": "sum",
+          "unit": "T",
+          "operands": [
+            {
+              "value": "1",
+              "unit": "T",
+              "citation_id": "f:1",
+              "filename": "form 3 filled.docx.pdf",
+              "label": "ETP sludge 1.0 T"
+            },
+            {
+              "value": "0.4",
+              "unit": "T",
+              "citation_id": "f:2",
+              "filename": "form 3 filled.docx.pdf",
+              "label": "residues containing oil 0.4 T"
+            }
+          ],
+          "result": "1.4",
+          "kind": "calculated"
+        }
+      ],
+      "limitations": [
+        "These totals are calculated by the system from reported source values."
+      ]
+    },
+    "workbook_monthly_vs_annual": {
+      "answer": "The monthly values sum to 2227523 kWh (system-calculated). The document reports an annual figure of 2425123 kWh. These do not agree.",
+      "calculations": [
+        {
+          "operation": "compare_reported_vs_sum",
+          "unit": "kWh",
+          "operands": [
+            {
+              "value": "200823",
+              "unit": "kWh",
+              "citation_id": "x:1",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-01-01",
+              "label": "January 2026 Total Consumption (kWh) 200823"
+            },
+            {
+              "value": "181700",
+              "unit": "kWh",
+              "citation_id": "x:2",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-02-01",
+              "label": "February 2026 Total Consumption (kWh) 181700"
+            },
+            {
+              "value": "201800",
+              "unit": "kWh",
+              "citation_id": "x:3",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-03-01",
+              "label": "March 2026 Total Consumption (kWh) 201800"
+            },
+            {
+              "value": "203900",
+              "unit": "kWh",
+              "citation_id": "x:4",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-04-01",
+              "label": "April 2026 Total Consumption (kWh) 203900"
+            },
+            {
+              "value": "214900",
+              "unit": "kWh",
+              "citation_id": "x:5",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-05-01",
+              "label": "May 2026 Total Consumption (kWh) 214900"
+            },
+            {
+              "value": "209500",
+              "unit": "kWh",
+              "citation_id": "x:6",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-06-01",
+              "label": "June 2026 Total Consumption (kWh) 209500"
+            },
+            {
+              "value": "194100",
+              "unit": "kWh",
+              "citation_id": "x:7",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-07-01",
+              "label": "July 2026 Total Consumption (kWh) 194100"
+            },
+            {
+              "value": "206300",
+              "unit": "kWh",
+              "citation_id": "x:9",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-09-01",
+              "label": "September 2026 Total Consumption (kWh) 206300"
+            },
+            {
+              "value": "211600",
+              "unit": "kWh",
+              "citation_id": "x:10",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-10-01",
+              "label": "October 2026 Total Consumption (kWh) 211600"
+            },
+            {
+              "value": "203500",
+              "unit": "kWh",
+              "citation_id": "x:11",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-11-01",
+              "label": "November 2026 Total Consumption (kWh) 203500"
+            },
+            {
+              "value": "199400",
+              "unit": "kWh",
+              "citation_id": "x:12",
+              "filename": "Annual Electricity Consumption.xlsx",
+              "period_start": "2026-12-01",
+              "label": "December 2026 Total Consumption (kWh) 199400"
+            }
+          ],
+          "result": "2227523",
+          "reported": "2425123",
+          "kind": "calculated"
+        }
+      ],
+      "limitations": [
+        "The calculated monthly sum differs from the cited annual total; review sheet provenance.",
+        "Only 11 monthly values were present in the retrieved evidence; coverage may be partial."
+      ]
+    },
+    "policy_complaint_deadline_absent": {
+      "answer": "The selected evidence does not specify a complaint-resolution deadline.",
+      "calculations": [],
+      "limitations": [
+        "Absence is based on retrieved excerpts, not a claim about the whole document beyond those excerpts."
+      ]
+    },
+    "policy_value_chain_scope": {
+      "answer": "The documents report entire value.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "fy_2024_electricity_bills": {
+      "answer": "I could not calculate a total for FY 2024-25 from the selected evidence.",
+      "calculations": [],
+      "limitations": [
+        "Indian financial year 2024-25 runs 2024-04-01 to 2025-03-31.",
+        "Values appear to belong to different organisations; a combined total was not calculated.",
+        "Excluded water_bill_invoice.pdf: period 2025-12-01\u20132025-12-31 falls outside FY 2024."
+      ]
+    },
+    "fy_2025_sparse_water": {
+      "answer": "Calculated coverage for FY 2025-26 (system-calculated from selected evidence):\n- Included reported 2321 Cubic Meters from water_bill_invoice.pdf\n- Calculated total: 2321 Cubic Meters (sum of 1 reported values)",
+      "calculations": [
+        {
+          "operation": "fy_total",
+          "unit": "Cubic Meters",
+          "operands": [
+            {
+              "value": "2321",
+              "unit": "Cubic Meters",
+              "citation_id": "w:1",
+              "filename": "water_bill_invoice.pdf",
+              "period_start": "2025-12-01",
+              "period_end": "2025-12-31",
+              "label": "Units Consumed (December 2025): 2,321 Cubic Meters"
+            }
+          ],
+          "result": "2321",
+          "kind": "calculated",
+          "fy_year": 2025,
+          "bounds": [
+            "2025-04-01",
+            "2026-03-31"
+          ]
+        }
+      ],
+      "limitations": [
+        "Indian financial year 2025-26 runs 2025-04-01 to 2026-03-31.",
+        "Excluded Adani commercial electricity bill.pdf: period 2024-04-01\u20132024-04-30 falls outside FY 2025."
+      ]
+    },
+    "cross_org_refuse_blind_total": {
+      "answer": "I could not calculate a total for FY 2024-25 from the selected evidence.",
+      "calculations": [],
+      "limitations": [
+        "Indian financial year 2024-25 runs 2024-04-01 to 2025-03-31.",
+        "Values appear to belong to different organisations; a combined total was not calculated."
+      ]
+    },
+    "missing_metric_limitation": {
+      "answer": "I could not find Scope 1 greenhouse gas emissions in the selected water bill excerpts.",
+      "calculations": [],
+      "limitations": [
+        "Absence is based on retrieved excerpts, not a claim about the whole document beyond those excerpts."
+      ]
+    }
+  }
+}

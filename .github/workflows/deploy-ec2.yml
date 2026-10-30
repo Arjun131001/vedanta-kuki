@@ -1,0 +1,61 @@
+name: Build and deploy Vedanta
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, codex/github-ec2-deploy]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: vedanta-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build and test the release
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build -f deploy/Dockerfile.backend -t "vedanta-backend:$GITHUB_SHA" .
+          docker run --rm --network none -e PYTHONPATH=/app -v "$PWD/backend/tests:/tests:ro" "vedanta-backend:$GITHUB_SHA" python -m pytest /tests -q --tb=short -p no:cacheprovider
+          node --test frontend/tests/*.test.mjs
+          docker build -f deploy/Dockerfile.web -t "vedanta-web:$GITHUB_SHA" .
+          mkdir -p release
+          docker save "vedanta-backend:$GITHUB_SHA" "vedanta-web:$GITHUB_SHA" | gzip > release/images.tar.gz
+          cp deploy/compose.yaml deploy/verify-live.py deploy/backup.sh deploy/apply-release.sh release/
+          tar -czf release.tar.gz -C release .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vedanta-${{ github.sha }}
+          path: release.tar.gz
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
+  approve-release:
+    name: Approve release for local EC2 deployment
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: vedanta-${{ github.sha }}
+          path: approved
+      - uses: actions/upload-artifact@v7
+        with:
+          name: approved-vedanta-${{ github.sha }}
+          path: approved/release.tar.gz
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
+      - name: Explain the final deployment step
+        run: |
+          echo 'Release approved. Run deploy/deploy-approved.ps1 from your computer with this run ID to deploy over your existing SSH connection.' >> "$GITHUB_STEP_SUMMARY"

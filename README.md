@@ -4,6 +4,20 @@ For the AWS deployment implementation targeting `vedant-a.duckdns.org`, see [dep
 
 A local workspace for uploading PDF and XLSX reports. A background worker reads each file, then automatically generates reported data with OpenAI. Documents show **Generating** until generation completes and **Generated** afterwards. Generated results still require evidence review. Configure `OPENAI_API_KEY` in the ignored project-root `.env`; provider charges may apply. Missing configuration or failed jobs show **Needs attention** with a retry action.
 
+## AI coding assistant
+
+I used OpenAI Codex as the AI coding assistant while developing this application.
+
+## Technology stack
+
+- **Frontend:** React 18, TypeScript, Vite, and CSS; pnpm for package management.
+- **Backend:** Python 3.11+, FastAPI, and Uvicorn, with a separate Python background worker.
+- **Storage:** SQLite for application data and job state, with local filesystem storage for uploaded documents on encrypted AWS EBS.
+- **Document processing:** pdfplumber for PDF extraction and openpyxl for XLSX spreadsheets.
+- **AI:** OpenAI API with `gpt-4o-mini` for reported-data extraction and cited document Q&A; HTTPX for API requests.
+- **Deployment:** Docker Compose on Ubuntu 24.04 and AWS EC2, Caddy for HTTPS and reverse proxying, and DuckDNS for the free subdomain.
+- **CI/CD and testing:** GitHub Actions for builds, tests, and release approval; SSH for deployment; pytest and Node.js's built-in test runner.
+
 ## Set up on Windows
 
 Install Python 3.11 or newer and Node.js 20 or newer (and pnpm). Open PowerShell in this folder. Use three terminals so each process stays running.

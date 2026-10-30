@@ -854,6 +854,56 @@ type FactsState = {
   } | null;
 };
 
+function ReportedDetailCard({ fact, review = false, kind, onEvidence }: {
+  fact: ReportedFact & { review_reason?: string };
+  review?: boolean;
+  kind: string;
+  onEvidence: (unit: number) => void;
+}) {
+  const location = (evidence: FactEvidence) => `${kind === "pdf" ? "Page" : "Sheet"} ${evidence.unit_index}${evidence.cells.length ? ` · ${evidence.cells.join(", ")}` : ""}`;
+  const evidenceKey = (evidence: FactEvidence) => JSON.stringify([evidence.unit_index, evidence.reference_id, evidence.cells, evidence.quote, evidence.located_locally]);
+  const contexts = fact.context_evidence.filter((item, index, all) => evidenceKey(item) !== evidenceKey(fact.evidence)
+    && all.findIndex((other) => evidenceKey(other) === evidenceKey(item)) === index);
+  const origin = fact.method === "deterministic_table_fact" || fact.method === "deterministic_table_candidate"
+    ? "System-mapped label" : fact.method === "local_exact_reference_recovery" ? "Recovered references" : "AI-proposed label";
+  const labelRepeatsValue = fact.label.trim() === fact.value.trim();
+  return <article className={`reported-card ${review ? "needs-review" : ""}`}>
+    <header className="reported-card-head">
+      <span className="reported-origin">{origin}</span>
+      <span className={`reported-status ${review ? "review" : "checked"}`}><i />{review ? "Needs review" : "Checked"}</span>
+    </header>
+    {!labelRepeatsValue && <h3 className="reported-label">{fact.label}</h3>}
+    <div className={`reported-value ${fact.value.length > 70 || labelRepeatsValue ? "is-statement" : ""}`} role={labelRepeatsValue ? "heading" : undefined} aria-level={labelRepeatsValue ? 3 : undefined}>
+      {fact.value}
+      {(fact.unit || fact.currency) && <small>{[fact.unit, fact.currency].filter(Boolean).join(" · ")}</small>}
+    </div>
+    <dl className="reported-metadata">
+      <div><dt>Organization</dt><dd className={!fact.organization ? "not-stated" : ""}>{fact.organization || "Not identified"}</dd></div>
+      <div><dt>Period</dt><dd className={!fact.period ? "not-stated" : ""}>{fact.period || "Not specified"}</dd></div>
+    </dl>
+    {review && <p className="reported-review-note"><Icon name="alert" size={14} /><span>{fact.review_reason || "The relationship between the label and value needs review. This is not an accepted fact."}</span></p>}
+    <div className="reported-source-row"><span><Icon name="file" size={14} />{location(fact.evidence)}</span>
+      <button onClick={() => onEvidence(fact.evidence.unit_index)} aria-label={`View source for ${fact.label}`}>View source <Icon name="arrow" size={14} /></button>
+    </div>
+    <details className="reported-evidence">
+      <summary><span>Evidence &amp; context</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg></summary>
+      <div className="reported-evidence-body">
+        <div className="reported-evidence-label">Exact source label</div><p>{fact.source_label}</p>
+        <div className="reported-evidence-label">Source excerpt {fact.evidence.reference_id && <code>{fact.evidence.reference_id}</code>}</div>
+        <blockquote>{fact.evidence.quote}</blockquote>
+        {contexts.map((item, index) => <div className="reported-context" key={evidenceKey(item)}>
+          <div className="reported-evidence-label">{item.located_locally ? "Locally located label" : `Supporting context ${index + 1}`}</div>
+          <blockquote>{item.quote}</blockquote>
+          <button onClick={() => onEvidence(item.unit_index)}>Open {location(item)} <Icon name="arrow" size={12} /></button>
+        </div>)}
+        {fact.recovery_audit?.map((entry, index) => <div className="reported-recovery" key={index}>
+          <strong>Reference recovery · {entry.field}</strong><p>{entry.original_ids.join(", ")} → {entry.recovered_ids.join(", ")}</p><p>{entry.reason}</p>
+        </div>)}
+      </div>
+    </details>
+  </article>;
+}
+
 function DataOverview({
   result,
   state,
@@ -1746,106 +1796,16 @@ function FactsPanel({
               </details>
             )}
             {tab === "review" && review.length > 0 && (
-              <div className="review-details">
-                <strong>Needs review · not an accepted fact</strong>
-                <p className="batch-help">
-                  These values have exact source quotes, but their label
-                  association is unconfirmed. They are excluded from accepted
-                  facts.
-                </p>
-                {windowItems(review).map((fact, i) => (
-                  <article className="review-item" key={i}>
-                    <strong>
-                      {fact.label}{" "}
-                      {fact.method === "deterministic_table_candidate" ||
-                      fact.method === "deterministic_table_fact"
-                        ? "(Locally mapped cell · needs review)"
-                        : fact.method === "local_exact_reference_recovery"
-                          ? "(Locally recovered references · needs review)"
-                          : "(AI-proposed label)"}
-                    </strong>
-                    <p>Source label: {fact.source_label}</p>
-                    <p>
-                      Proposed value: {fact.value} {fact.unit || ""}{" "}
-                      {fact.currency || ""}
-                    </p>
-                    <p>{fact.review_reason}</p>
-                    {fact.recovery_audit?.map((entry, j) => (
-                      <p key={j}>
-                        Local {entry.field} reference:{" "}
-                        {entry.original_ids.join(", ")} →{" "}
-                        {entry.recovered_ids.join(", ")} · {entry.reason}
-                      </p>
-                    ))}
-                    <blockquote>{fact.evidence.quote}</blockquote>
-                    <button
-                      className="source-button"
-                      onClick={() => onEvidence(fact.evidence.unit_index)}
-                    >
-                      View source{" "}
-                      {fact.evidence.reference_id || fact.evidence.unit_index}
-                    </button>
-                    {fact.context_evidence.map((item, j) => (
-                      <p key={j}>
-                        {item.located_locally
-                          ? "Locally located label"
-                          : "Context"}
-                        : {item.quote}
-                      </p>
-                    ))}
-                  </article>
-                ))}
-              </div>
+              <>
+                <div className="reported-review-intro"><Icon name="alert" size={16} /><p>These proposals need review and are excluded from accepted facts. Open their evidence to check the label and value relationship.</p></div>
+                <div className="fact-list">
+                  {windowItems(review).map((fact, i) => <ReportedDetailCard key={i} fact={fact} review kind={document.kind} onEvidence={onEvidence} />)}
+                </div>
+              </>
             )}
             {tab === "checked" && (
               <div className="fact-list">
-                {windowItems(checked).map((fact, i) => (
-                  <article className="fact-card" key={i}>
-                    <div>
-                      <strong>
-                        {fact.label}{" "}
-                        <small>
-                          {fact.method === "deterministic_table_fact"
-                            ? "(Column header · system-mapped)"
-                            : "(AI-proposed label)"}
-                        </small>
-                      </strong>
-                      <span>Source label: {fact.source_label}</span>
-                      <span>
-                        {fact.organization || "Organization not identified"}
-                      </span>
-                    </div>
-                    <div className="fact-value">
-                      {fact.value} {fact.unit || ""} {fact.currency || ""}
-                    </div>
-                    <p>{fact.period || "Period not specified"}</p>
-                    <blockquote>{fact.evidence.quote}</blockquote>
-                    <button
-                      className="source-button"
-                      onClick={() => onEvidence(fact.evidence.unit_index)}
-                    >
-                      View source{" "}
-                      {fact.evidence.reference_id || fact.evidence.unit_index}
-                      {fact.evidence.cells.length
-                        ? ` · ${fact.evidence.cells.join(", ")}`
-                        : ""}
-                    </button>
-                    {fact.context_evidence.map((e, j) => (
-                      <button
-                        className="source-button"
-                        key={j}
-                        onClick={() => onEvidence(e.unit_index)}
-                      >
-                        {e.located_locally
-                          ? "Locally located label"
-                          : "Context"}{" "}
-                        {e.unit_index}
-                        {e.cells.length ? ` · ${e.cells.join(", ")}` : ""}:{" "}
-                        {e.quote}
-                      </button>
-                    ))}
-                  </article>
-                ))}
+                {windowItems(checked).map((fact, i) => <ReportedDetailCard key={i} fact={fact} kind={document.kind} onEvidence={onEvidence} />)}
               </div>
             )}
             {tab !== "history" && currentLength === 0 && (

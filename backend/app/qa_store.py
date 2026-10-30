@@ -7,8 +7,8 @@ import uuid
 
 from .evidence_index import build_index
 
-MAX_RECORDS = 120
-MAX_CHARS = 60000
+MAX_RECORDS = 200
+MAX_CHARS = 100000
 
 
 def create_tables(db):

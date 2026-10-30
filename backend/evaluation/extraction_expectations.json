@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "purpose": "Source-checked extraction probes; not the assignment's question-answering evaluation suite.",
+  "cases": [
+    {
+      "id": "adani_consumption",
+      "document": "Adani commercial electricity bill.pdf",
+      "kind": "numeric",
+      "value": "47407",
+      "source": {
+        "page": 2,
+        "text": "Consumption(kWh) 47407 47407"
+      },
+      "label_terms": [
+        "consum",
+        "units"
+      ],
+      "acceptable_pages": [
+        1,
+        2
+      ],
+      "note": "The same 47407 reported consumption is present in the page 1 summary row and page 2 consumption table; both manually checked."
+    },
+    {
+      "id": "adani_current_bill",
+      "document": "Adani commercial electricity bill.pdf",
+      "kind": "numeric",
+      "value": "632023.17",
+      "source": {
+        "page": 1,
+        "text": "APR-24 47407 r 632023.17"
+      },
+      "label_terms": [
+        "bill",
+        "amount",
+        "charge"
+      ]
+    },
+    {
+      "id": "workbook_january_total",
+      "document": "Annual Electricity Consumption.xlsx",
+      "kind": "numeric",
+      "value": "200823",
+      "source": {
+        "sheet": "Monthly Summary 2026",
+        "cell": "F3",
+        "label_cell": "F2",
+        "period_cell": "A3"
+      },
+      "label_terms": [
+        "consum",
+        "total"
+      ]
+    },
+    {
+      "id": "workbook_annual_total",
+      "document": "Annual Electricity Consumption.xlsx",
+      "kind": "numeric",
+      "value": "2425123",
+      "source": {
+        "sheet": "Monthly Summary 2026",
+        "cell": "F16",
+        "label_cell": "F2",
+        "period_cell": "A16"
+      },
+      "label_terms": [
+        "consum",
+        "total",
+        "annual"
+      ]
+    },
+    {
+      "id": "bescom_consumption",
+      "document": "BESCOM Commercial Electricity Bill.pdf",
+      "kind": "numeric",
+      "value": "63000",
+      "source": {
+        "page": 1,
+        "text": "Consumption 63000"
+      },
+      "label_terms": [
+        "consum",
+        "energy"
+      ]
+    },
+    {
+      "id": "bescom_net_payable",
+      "document": "BESCOM Commercial Electricity Bill.pdf",
+      "kind": "numeric",
+      "value": "808528",
+      "source": {
+        "page": 1,
+        "text": "808528.00"
+      },
+      "label_terms": [
+        "payable",
+        "amount",
+        "bill"
+      ]
+    },
+    {
+      "id": "water_consumption",
+      "document": "water_bill_invoice.pdf",
+      "kind": "numeric",
+      "value": "2321",
+      "source": {
+        "page": 1,
+        "text": "Units Consumed (December 2025): 2,321 Cubic Meters"
+      },
+      "label_terms": [
+        "consum",
+        "water",
+        "units"
+      ]
+    },
+    {
+      "id": "water_amount_due",
+      "document": "water_bill_invoice.pdf",
+      "kind": "numeric",
+      "value": "158733.62",
+      "source": {
+        "page": 2,
+        "text": "158,733.62"
+      },
+      "label_terms": [
+        "amount",
+        "due",
+        "total"
+      ]
+    },
+    {
+      "id": "waste_etp_sludge",
+      "document": "form 3 filled.docx.pdf",
+      "kind": "numeric",
+      "value": "1.0",
+      "source": {
+        "page": 1,
+        "text": "ETP sludge 1.0 T"
+      },
+      "label_terms": [
+        "sludge",
+        "waste",
+        "quantity"
+      ]
+    },
+    {
+      "id": "waste_oil_residue",
+      "document": "form 3 filled.docx.pdf",
+      "kind": "numeric",
+      "value": "0.4",
+      "source": {
+        "page": 1,
+        "text": "residues containing",
+        "additional_text": "0.4 T"
+      },
+      "label_terms": [
+        "oil",
+        "waste",
+        "residu",
+        "quantity"
+      ]
+    },
+    {
+      "id": "policy_value_chain_scope",
+      "document": "quality_policy_nestle.pdf",
+      "kind": "text",
+      "value": "entire value",
+      "source": {
+        "page": 3,
+        "text": "Quality is embedded across the entire value"
+      },
+      "label_terms": [
+        "quality",
+        "scope",
+        "value",
+        "end"
+      ]
+    },
+    {
+      "id": "policy_complaint_deadline_absent",
+      "document": "quality_policy_nestle.pdf",
+      "kind": "absence",
+      "source": {
+        "pages_reviewed": [
+          1,
+          2,
+          3
+        ]
+      },
+      "forbidden_label_terms": [
+        "complaint deadline",
+        "complaint resolution deadline"
+      ],
+      "note": "Manual full-text review found no complaint-resolution deadline. This probe only detects an explicit fabricated deadline label; it is not exhaustive semantic grading."
+    }
+  ]
+}

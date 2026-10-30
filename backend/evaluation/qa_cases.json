@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "purpose": "Source-verified QA evaluation cases for the KuKi assignment documents.",
+  "cases": [
+    {
+      "id": "adani_consumption_period",
+      "filenames": ["Adani commercial electricity bill.pdf"],
+      "question": "What electricity consumption does the Adani bill report, and for which period?",
+      "kind": "lookup",
+      "expected": {
+        "contains_any": ["47407", "47,407"],
+        "period_any": ["APR-24", "01-04-2024", "April 2024", "Apr 2024"]
+      },
+      "notes": "Reported consumption on the Adani bill."
+    },
+    {
+      "id": "bescom_consumption_period",
+      "filenames": ["BESCOM Commercial Electricity Bill.pdf"],
+      "question": "What electricity consumption does the BESCOM bill report, and for which billing period?",
+      "kind": "lookup",
+      "expected": {
+        "contains_any": ["63000", "63,000"],
+        "period_any": ["01-06-2024", "June 2024", "01-07-2024"]
+      }
+    },
+    {
+      "id": "water_consumption",
+      "filenames": ["water_bill_invoice.pdf"],
+      "question": "What water consumption is reported, and does it match the meter readings?",
+      "kind": "lookup",
+      "expected": {
+        "contains_any": ["2321", "2,321"],
+        "unit_any": ["Cubic Meter", "Cubic Meters"]
+      },
+      "notes": "If meter comparison evidence is incomplete, a limitation is acceptable."
+    },
+    {
+      "id": "waste_total_sum",
+      "filenames": ["form 3 filled.docx.pdf"],
+      "question": "What total waste quantity is recorded? Calculate the sum.",
+      "kind": "calculation",
+      "expected": {
+        "contains_any": ["1.4"],
+        "unit_any": ["T"],
+        "requires_calculation": true
+      }
+    },
+    {
+      "id": "workbook_monthly_vs_annual",
+      "filenames": ["Annual Electricity Consumption.xlsx"],
+      "question": "Do the workbook's monthly values and annual summaries agree? Calculate the monthly sum.",
+      "kind": "calculation",
+      "expected": {
+        "contains_any": ["2425123", "2,425,123"],
+        "requires_calculation": true
+      },
+      "notes": "Monthly Summary 2026 F column annual is 2425123; Quarterly sheet has a conflicting 2427123."
+    },
+    {
+      "id": "policy_complaint_deadline_absent",
+      "filenames": ["quality_policy_nestle.pdf"],
+      "question": "Does the quality policy specify a deadline for resolving customer complaints?",
+      "kind": "absence",
+      "expected": {
+        "must_not_claim_deadline": true,
+        "absence_any": ["no deadline", "does not specify", "not specify", "no complaint-resolution deadline", "cannot find"]
+      }
+    },
+    {
+      "id": "policy_value_chain_scope",
+      "filenames": ["quality_policy_nestle.pdf"],
+      "question": "What scope does the quality policy describe for embedding quality?",
+      "kind": "lookup",
+      "expected": {
+        "contains_any": ["entire value", "value chain"]
+      }
+    },
+    {
+      "id": "fy_2024_electricity_bills",
+      "filenames": [
+        "Adani commercial electricity bill.pdf",
+        "BESCOM Commercial Electricity Bill.pdf",
+        "water_bill_invoice.pdf"
+      ],
+      "question": "What is the total electricity consumption for financial year 2024 across these bills?",
+      "kind": "calculation",
+      "expected": {
+        "requires_calculation": true,
+        "org_separation_or_partial": true,
+        "notes": "Adani and BESCOM are different organisations; combined total should be refused or clearly separated. Water Dec 2025 is outside FY 2024."
+      }
+    },
+    {
+      "id": "fy_2025_sparse_water",
+      "filenames": ["water_bill_invoice.pdf", "Adani commercial electricity bill.pdf"],
+      "question": "What is the total for financial year 2025?",
+      "kind": "calculation",
+      "expected": {
+        "requires_calculation": true,
+        "coverage_any": ["partial", "none", "incomplete", "Excluded", "outside"]
+      }
+    },
+    {
+      "id": "cross_org_refuse_blind_total",
+      "filenames": [
+        "Adani commercial electricity bill.pdf",
+        "BESCOM Commercial Electricity Bill.pdf"
+      ],
+      "question": "Calculate the combined total electricity consumption across both bills for financial year 2024.",
+      "kind": "calculation",
+      "expected": {
+        "requires_calculation": true,
+        "refuse_combined_any": ["different organisations", "not calculated", "not combine", "separate"]
+      }
+    },
+    {
+      "id": "missing_metric_limitation",
+      "filenames": ["water_bill_invoice.pdf"],
+      "question": "What Scope 1 greenhouse gas emissions does this water bill report?",
+      "kind": "absence",
+      "expected": {
+        "absence_any": ["could not", "cannot", "no ", "not ", "insufficient", "does not"],
+        "must_not_claim_zero": true
+      }
+    }
+  ]
+}

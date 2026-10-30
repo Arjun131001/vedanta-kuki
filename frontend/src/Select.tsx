@@ -3,6 +3,14 @@ import { createPortal } from "react-dom";
 
 type Option = { value: string; label: string };
 
+export function DropdownIcon({ kind = "document" }: { kind?: "document" | "calendar" | "sheet" }) {
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {kind === "calendar" ? <><rect x="4" y="5" width="16" height="16" rx="3" /><path d="M8 3v4m8-4v4M4 11h16m-11 4h1m4 0h1" /></>
+      : kind === "sheet" ? <><rect x="4" y="3" width="16" height="18" rx="3" /><path d="M4 9h16M4 15h16M10 9v12" /></>
+      : <><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10z" /><path d="M13 3v7h7M8 14h8m-8 3h5" /></>}
+  </svg>;
+}
+
 export default function Select({ value, options, onChange, label, disabled = false }: {
   value: string;
   options: Option[];
@@ -89,11 +97,13 @@ export default function Select({ value, options, onChange, label, disabled = fal
           if (found >= 0) { event.preventDefault(); setActive(found); setOpen(true); }
         }
       }}>
+      <span className="select-leading"><DropdownIcon kind={label.toLowerCase().includes("year") ? "calendar" : label === "Sheet" ? "sheet" : "document"} /></span>
       <span className="select-value">{options[selected]?.label || "Choose an option"}</span>
       <svg className="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
     </button>
     {expanded && createPortal(<div ref={menu} id={`${id}-menu`} role="listbox" aria-label={label}
       className="select-menu" style={position} onMouseDown={(event) => event.preventDefault()}>
+      <div className="select-menu-heading" aria-hidden="true"><span>{label}</span><span className="select-option-count">{options.length}</span></div>
       {options.map((option, index) => <div key={option.value} id={`${id}-option-${index}`} role="option"
         aria-selected={option.value === value} data-index={index}
         className={`select-option ${index === active ? "is-active" : ""} ${option.value === value ? "is-selected" : ""}`}
@@ -101,6 +111,7 @@ export default function Select({ value, options, onChange, label, disabled = fal
         <span>{option.label}</span>
         {option.value === value && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>}
       </div>)}
+      <div className="select-menu-hint" aria-hidden="true">↑ ↓ Navigate <span>↵ Select</span></div>
     </div>, document.body)}
   </div>;
 }

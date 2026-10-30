@@ -1,0 +1,144 @@
+{
+  "label": "baseline",
+  "overall": {
+    "passed": 6,
+    "total": 11,
+    "score": 54.5
+  },
+  "cases": [
+    {
+      "id": "adani_consumption_period",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "bescom_consumption_period",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "water_consumption",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "waste_total_sum",
+      "pass": false,
+      "notes": "missing expected value; expected a calculation payload"
+    },
+    {
+      "id": "workbook_monthly_vs_annual",
+      "pass": false,
+      "notes": "missing expected value; expected a calculation payload"
+    },
+    {
+      "id": "policy_complaint_deadline_absent",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "policy_value_chain_scope",
+      "pass": true,
+      "notes": "pass"
+    },
+    {
+      "id": "fy_2024_electricity_bills",
+      "pass": false,
+      "notes": "unsafe or empty FY handling"
+    },
+    {
+      "id": "fy_2025_sparse_water",
+      "pass": false,
+      "notes": "missing coverage/limitation language"
+    },
+    {
+      "id": "cross_org_refuse_blind_total",
+      "pass": false,
+      "notes": "did not refuse unsafe combined total"
+    },
+    {
+      "id": "missing_metric_limitation",
+      "pass": true,
+      "notes": "pass"
+    }
+  ],
+  "answers": {
+    "adani_consumption_period": {
+      "answer": "The documents report 47407 for period APR-24.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "bescom_consumption_period": {
+      "answer": "The documents report 63000 for period 01-06-2024.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "water_consumption": {
+      "answer": "The documents report 2321 Cubic Meter.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "waste_total_sum": {
+      "answer": "I can\u2019t calculate that from the documents yet.",
+      "calculations": [],
+      "limitations": [
+        "The calculation engine is not available yet."
+      ]
+    },
+    "workbook_monthly_vs_annual": {
+      "answer": "I can\u2019t calculate that from the documents yet.",
+      "calculations": [],
+      "limitations": [
+        "The calculation engine is not available yet."
+      ]
+    },
+    "policy_complaint_deadline_absent": {
+      "answer": "The selected evidence does not specify a complaint-resolution deadline.",
+      "calculations": [],
+      "limitations": [
+        "Absence is based on retrieved excerpts, not a claim about the whole document beyond those excerpts."
+      ]
+    },
+    "policy_value_chain_scope": {
+      "answer": "The documents report entire value.",
+      "calculations": [],
+      "limitations": [
+        "Offline lookup stub for scoring packaging; live runs should cite source pages."
+      ]
+    },
+    "fy_2024_electricity_bills": {
+      "answer": "I can\u2019t calculate that from the documents yet.",
+      "calculations": [],
+      "limitations": [
+        "The calculation engine is not available yet."
+      ]
+    },
+    "fy_2025_sparse_water": {
+      "answer": "I can\u2019t calculate that from the documents yet.",
+      "calculations": [],
+      "limitations": [
+        "The calculation engine is not available yet."
+      ]
+    },
+    "cross_org_refuse_blind_total": {
+      "answer": "I can\u2019t calculate that from the documents yet.",
+      "calculations": [],
+      "limitations": [
+        "The calculation engine is not available yet."
+      ]
+    },
+    "missing_metric_limitation": {
+      "answer": "I could not find Scope 1 greenhouse gas emissions in the selected water bill excerpts.",
+      "calculations": [],
+      "limitations": [
+        "Absence is based on retrieved excerpts, not a claim about the whole document beyond those excerpts."
+      ]
+    }
+  }
+}

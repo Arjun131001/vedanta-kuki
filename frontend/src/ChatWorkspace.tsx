@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./chat.css";
 import { parseAnswer, parseInline } from "./answer.mjs";
+import { DropdownIcon } from "./Select";
 
 type Doc = { id: string; filename: string; status: string };
 type Citation = {
@@ -129,9 +130,26 @@ export default function ChatWorkspace({
   const [railOpen, setRailOpen] = useState(false);
   const [nearBottom, setNearBottom] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sourceMenuRef = useRef<HTMLDetailsElement>(null);
   const request = useRef<{ question: string; key: string; id: string } | null>(null);
   const sessionRef = useRef<string | null>(null);
   const loadController = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const outside = (event: Event) => {
+      if (sourceMenuRef.current?.open && !sourceMenuRef.current.contains(event.target as Node)) sourceMenuRef.current.open = false;
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && sourceMenuRef.current?.open) {
+        sourceMenuRef.current.open = false;
+        sourceMenuRef.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("focusin", outside);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("focusin", outside); document.removeEventListener("keydown", escape); };
+  }, []);
 
   useEffect(
     () => () => {
@@ -505,32 +523,40 @@ export default function ChatWorkspace({
           )}
           <div className="chat-compose-shell">
             <div className="chat-scope">
-              <details className="chat-source-menu">
-                <summary>
-                  {names.length ? `${names.length} document${names.length === 1 ? "" : "s"} selected` : "Choose documents"}
-                  {session ? " · locked" : ""}
+              <details className="chat-source-menu" ref={sourceMenuRef}>
+                <summary className="select-trigger chat-document-trigger">
+                  <span className="select-leading"><DropdownIcon /></span>
+                  <span>{names.length ? "Selected documents" : "Choose documents"}</span>
+                  {names.length > 0 && <span className="select-option-count">{names.length}</span>}
+                  {session && <span className="picker-locked">Locked</span>}
+                  <svg className="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
                 </summary>
                 <div className="chat-picker">
-                  <strong>{session ? "Documents in this chat" : "Choose up to 10 documents"}</strong>
+                  <div className="picker-heading"><strong>{session ? "Documents in this chat" : "Choose your sources"}</strong><span className="select-option-count">{names.length} / 10</span></div>
+                  <p className="picker-description">{session ? "Sources stay fixed for this conversation." : "Select up to 10 documents to ask about."}</p>
                   {!session && !loadingSession && !sessionRef.current && !pending && (
+                    <div className="picker-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></svg>
                     <input
+                      type="search"
                       aria-label="Search documents"
                       placeholder="Search documents"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                     />
+                    </div>
                   )}
+                  <div className="picker-options">
                   {session ? (
                     names.map((name, i) => (
                       <p className="chat-selected-source" key={i}>
-                        ✓ {name}
+                        <DropdownIcon /> <span>{name}</span><span className="picker-check" aria-hidden="true">✓</span>
                       </p>
                     ))
                   ) : (
                     docs
                       .filter((d) => d.status === "ready" && d.filename.toLowerCase().includes(search.toLowerCase()))
                       .map((d) => (
-                        <label key={d.id}>
+                        <label key={d.id} className={`document-option ${selected.includes(d.id) ? "is-selected" : ""}`}>
                           <input
                             type="checkbox"
                             aria-label={`Include ${d.filename}`}
@@ -547,13 +573,17 @@ export default function ChatWorkspace({
                               )
                             }
                           />
+                          <span className="picker-file-icon"><DropdownIcon /></span>
                           <span>{d.filename}</span>
                         </label>
                       ))
                   )}
                   {!session && !docs.some((d) => d.status === "ready") && (
-                    <p>No extracted documents yet. Add files in the library first.</p>
+                    <p className="picker-empty">No extracted documents yet. Add files in the library first.</p>
                   )}
+                  {!session && docs.some((d) => d.status === "ready") && !docs.some((d) => d.status === "ready" && d.filename.toLowerCase().includes(search.toLowerCase())) && <p className="picker-empty" role="status">No matching documents. Try another search.</p>}
+                  </div>
+                  <div className="picker-footer"><span>{session ? "Start a new chat to change sources" : `${names.length} selected`}</span><button type="button" onClick={() => { if (sourceMenuRef.current) { sourceMenuRef.current.open = false; sourceMenuRef.current.querySelector("summary")?.focus(); } }}>Done</button></div>
                 </div>
               </details>
               {!session && names.length > 0 && (
@@ -607,7 +637,7 @@ export default function ChatWorkspace({
             </div>
           </div>
           <p className="chat-disclosure">
-            Lookups use OpenAI. Calculations and financial-year totals stay local.
+            Lookups use OpenAI (gpt-5-nano) with elaborative cited answers. Calculations and financial-year totals stay local.
           </p>
           </div>
         </div>

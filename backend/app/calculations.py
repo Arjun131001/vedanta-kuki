@@ -653,7 +653,24 @@ def fy_summary_from_records(records: list[dict], year: int, document_meta: list[
         "bounds": list(fy_bounds(year)),
         "coverage": result["coverage"],
         "totals": [
-            {"unit": calc["unit"], "value": calc["result"], "operand_count": len(calc["operands"])}
+            {
+                "unit": calc["unit"],
+                "value": calc["result"],
+                "operand_count": len(calc["operands"]),
+                # Document-reported figures that were summed into this calculated total.
+                "reported_values": [
+                    {
+                        "value": op["value"],
+                        "unit": op.get("unit") or calc["unit"],
+                        "filename": op.get("filename"),
+                        "label": op.get("label"),
+                        "period_start": op.get("period_start"),
+                        "period_end": op.get("period_end"),
+                        "citation_id": op.get("citation_id"),
+                    }
+                    for op in calc["operands"]
+                ],
+            }
             for calc in result["calculations"]
         ],
         "items": [
